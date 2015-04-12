@@ -13,6 +13,7 @@ class SearchesController < ApplicationController
   end
 
   def create
+    Indico.api_key = 'f921ed87f664b65b825d7fe1e86dfcab'
     ticker = params[:q]
     stocks = StockQuote::Stock.quote(ticker)
     name = stocks.name
@@ -31,13 +32,18 @@ class SearchesController < ApplicationController
 
     @tweets = []
 
-    client.search("$#{ticker}", result_type: "recent").take(100).collect do |tweet|
+    client.search("$#{ticker}", result_type: "recent").take(20).collect do |tweet|
       @tweets << tweet.text
     end
 
-    
+    @ticker_sentiment = []
 
-    render text: "#{ticker} #{name} #{@tweets}"
+    for t in @tweets
+      @ticker_sentiment << Indico.sentiment(t)
+    end
+
+
+    render text: "#{ticker} #{name} #{@ticker_sentiment}"
   end
 
   def update
